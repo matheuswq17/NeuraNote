@@ -1,65 +1,97 @@
-CHUNK_SOAP_PROMPT = """Você é um assistente clínico ético. Resuma APENAS este trecho da transcrição no formato SOAP.
-REGRAS: sem diagnóstico; cite evidências literais (entre aspas) quando possível; marque "informação insuficiente" se faltar base.
-Retorne JSON válido.
+CHUNK_SOAP_PROMPT = """Você é um assistente clínico ético. Resuma APENAS este trecho no formato SOAP.
+
+REGRAS:
+- NÃO faça diagnóstico; use hipóteses/observações.
+- S (Subjetivo) deve ser CONCISO: 1 a 3 linhas, apenas queixas e mudanças relevantes.
+- Cite evidências LITERAIS entre aspas quando possível (em A).
+- Se faltar base, escreva "informação insuficiente".
+- Tom clínico, claro e objetivo.
+- Retorne **JSON válido**.
 
 TRECHO:
 {chunk}
 
 SAÍDA (JSON):
 {{
-  "S": "...",
-  "O": "...",
-  "A": {{"hipoteses": ["..."], "incertezas": ["..."], "evidencias": ["trecho 1", "trecho 2"]}},
-  "P": {{"proximos_passos": ["..."], "tarefas": ["..."], "alertas": ["..."]}}
+  "S": "1 a 3 linhas, conciso",
+  "O": "observações verificáveis",
+  "A": {{
+    "hipoteses": ["..."],
+    "incertezas": ["..."],
+    "evidencias": ["trecho 1", "trecho 2"]
+  }},
+  "P": {{
+    "proximos_passos": ["..."],   // manter essa seção
+    "tarefas": ["..."],           // manter essa seção
+    "alertas": ["..."]
+  }}
 }}
 """
 
 CHUNK_PHEE_PROMPT = """Você é um assistente clínico ético. Resuma APENAS este trecho no formato PHEE.
-REGRAS: sem diagnóstico; inclua evidências literais quando possível; marque "informação insuficiente" se faltar base.
-Retorne JSON válido.
+
+REGRAS:
+- Sem diagnóstico; use hipóteses/observações.
+- Inclua evidências LITERAIS quando possível.
+- Se faltar base, escreva "informação insuficiente".
+- Tom clínico, claro e objetivo.
+- Retorne **JSON válido**.
 
 TRECHO:
 {chunk}
 
 SAÍDA (JSON):
 {{
-  "Problema": "...",
+  "Problema": "conciso",
   "Hipoteses": ["..."],
   "Evidencias": ["trecho 1", "trecho 2"],
-  "Encaminhamentos": ["..."]
+  "Encaminhamentos": ["..."]  // pode incluir próximos passos/tarefas quando fizer sentido
 }}
 """
 
-AGG_SOAP_PROMPT = """Você irá AGREGAR vários resumos parciais (em JSON) de uma mesma sessão (vários trechos).
-Produza um único resumo final SOAP consistente, sem repetir informações, preservando a ética:
-- Sem diagnóstico fechado; apenas hipóteses/observações.
-- Inclua evidências literais representativas (sem excesso).
-- Mantenha tom clínico, claro e objetivo.
+AGG_SOAP_PROMPT = """Você agregará vários resumos parciais (JSON) de uma sessão.
 
-RESUMOS PARCIAIS (JSON por linha):
+REGRAS DE AGREGAÇÃO:
+- Produza um **único** SOAP consistente.
+- **S conciso (1–3 linhas)**: apenas queixas e mudanças relevantes.
+- Não repita conteúdo; una as evidências representativas em A.
+- Sem diagnóstico fechado; apenas hipóteses/observações.
+- Mantenha **Próximos passos** e **Tarefas** em P como listas separadas.
+
+RESUMOS PARCIAIS (um JSON por linha):
 {partials}
 
 SAÍDA (JSON FINAL):
 {{
-  "S": "...",
-  "O": "...",
-  "A": {{"hipoteses": ["..."], "incertezas": ["..."], "evidencias": ["trecho 1", "trecho 2"]}},
-  "P": {{"proximos_passos": ["..."], "tarefas": ["..."], "alertas": ["..."]}}
+  "S": "1 a 3 linhas, conciso",
+  "O": "observações verificáveis",
+  "A": {{
+    "hipoteses": ["..."],
+    "incertezas": ["..."],
+    "evidencias": ["trecho 1", "trecho 2"]
+  }},
+  "P": {{
+    "proximos_passos": ["..."],
+    "tarefas": ["..."],
+    "alertas": ["..."]
+  }}
 }}
 """
 
-AGG_PHEE_PROMPT = """Você irá AGREGAR vários resumos parciais (em JSON) de uma mesma sessão (vários trechos).
-Produza um único resumo final PHEE consistente, sem repetir informações, preservando a ética:
-- Sem diagnóstico fechado; apenas hipóteses/observações.
-- Inclua evidências literais representativas (sem excesso).
-- Tom clínico, claro e objetivo.
+AGG_PHEE_PROMPT = """Você agregará vários resumos parciais (JSON) de uma sessão.
 
-RESUMOS PARCIAIS (JSON por linha):
+REGRAS DE AGREGAÇÃO:
+- Produza um PHEE único, sem repetições.
+- Sem diagnóstico; hipóteses/observações.
+- Evidências literais representativas.
+- Encaminhamentos podem incluir próximos passos e tarefas quando fizer sentido.
+
+RESUMOS PARCIAIS (um JSON por linha):
 {partials}
 
 SAÍDA (JSON FINAL):
 {{
-  "Problema": "...",
+  "Problema": "conciso",
   "Hipoteses": ["..."],
   "Evidencias": ["trecho 1", "trecho 2"],
   "Encaminhamentos": ["..."]
