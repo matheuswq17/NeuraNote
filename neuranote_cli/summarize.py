@@ -1,6 +1,8 @@
 import json
 import os
 import subprocess
+from dotenv import load_dotenv
+load_dotenv()
 from typing import Dict, Any, List
 from prompts import (
     CHUNK_SOAP_PROMPT, CHUNK_PHEE_PROMPT,
