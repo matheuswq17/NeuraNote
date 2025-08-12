@@ -102,6 +102,7 @@ def main():
     args = parser.parse_args()
 
     t0 = time.perf_counter()
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     audio_path = pathlib.Path(args.audio)
     if not audio_path.exists():
@@ -115,7 +116,7 @@ def main():
     start_trans = time.perf_counter()
     transcript = transcribe(str(audio_path), model_size=args.whisper_model)
     end_trans = time.perf_counter()
-    transcript_file = outdir / (audio_path.stem + "_transcript.txt")
+    transcript_file = outdir / f"Transcricao_completa_{timestamp}.txt"
     transcript_file.write_text(transcript, encoding="utf-8")
     print(f"✅ Transcrição salva em {transcript_file}")
     print(f"⏱️ Tempo de transcrição: {end_trans - start_trans:.2f} segundos")
@@ -126,8 +127,8 @@ def main():
     result = summarize(transcript, fmt=args.format, engine=args.engine)
     end_sum = time.perf_counter()
 
-    partials_file = outdir / (audio_path.stem + "_partials.json")
-    summary_json_file = outdir / (audio_path.stem + "_summary.json")
+    partials_file = outdir / f"Parciais_resumo_{timestamp}.json"
+    summary_json_file = outdir / f"Resumo_da_sessao_{timestamp}.json"
     partials_file.write_text(json.dumps(result.get("partials", []), ensure_ascii=False, indent=2), encoding="utf-8")
     summary_json_file.write_text(json.dumps(result.get("final", {}), ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -145,7 +146,7 @@ def main():
         "engine": args.engine,
         "chunks": result.get("chunks", 1),
     }
-    summary_txt_file = outdir / (audio_path.stem + "_summary.txt")
+    summary_txt_file = outdir / f"Resumo_da_sessao_{timestamp}.txt"
     if args.format.upper() == "SOAP":
         write_pretty_soap(final, meta, summary_txt_file)
     else:
