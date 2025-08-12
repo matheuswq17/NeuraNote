@@ -21,25 +21,23 @@ def main():
     outdir = pathlib.Path(args.outdir)
     ensure_dir(outdir)
 
-    # 1) transcrição
+    # 1) Transcrição
     print("🧾 Transcrevendo com faster-whisper...")
     transcript = transcribe(str(audio_path), model_size=args.whisper_model)
     transcript_file = outdir / (audio_path.stem + "_transcript.txt")
     transcript_file.write_text(transcript, encoding="utf-8")
     print(f"✅ Transcrição salva em {transcript_file}")
 
-    # 2) resumo com map-reduce
+    # 2) Resumo
     print(f"✍️ Resumindo em {args.format} com {args.engine}...")
-    result = summarize(transcript, fmt=args.format, engine=args.engine)
+    summary = summarize(transcript, fmt=args.format, engine=args.engine)
 
-    partials_file = outdir / (audio_path.stem + "_partials.json")
-    summary_file  = outdir / (audio_path.stem + "_summary.json")
-    partials_file.write_text(json.dumps(result.get("partials", []), ensure_ascii=False, indent=2), encoding="utf-8")
-    summary_file.write_text(json.dumps(result.get("final", {}), ensure_ascii=False, indent=2), encoding="utf-8")
+    summary_file = outdir / (audio_path.stem + "_summary.json")
+    summary_file.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"✅ Resumo salvo em {summary_file}\n")
 
-    print(f"✅ Parciais: {partials_file}")
-    print(f"✅ Resumo final: {summary_file}\n")
-    print(json.dumps(result.get("final", {}), ensure_ascii=False, indent=2))
+    print("📤 Saída:")
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":
     main()
